@@ -11,11 +11,31 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 class makepdf
 {
+    // Operational variables 
     private $mpdf;
-    private $outputDir;
+    private $printDir;
     private $invoiceHTML;
-    private $printMode;
-    private $printDirName;
+
+    //Main Invoice Details
+    private $workCompany;
+    private $workCompanyAddress;
+    private $vatNumber;
+    private $invoiceNumber;
+    private $invoiceDate;
+    private $clientCompany;
+
+    /**
+     * Array of records for Table of records in the invoice
+     * Could be named better, but don't know what this list is for exactly
+     */
+    private $invoiceRecords; 
+
+    // Financial Values for the invoice
+    private $sortCode;
+    private $accountNumber;
+    private $subTotal;
+    private $vat;
+    private $totalDue;
 
 
     // iso 8601 - https://www.iso.org/iso-8601-date-and-time-format.html
@@ -23,16 +43,37 @@ class makepdf
 
 
     /**
-     * Class constructor
+     * makekPDF constructor
      * 
+     * Call with no arguments for defaults, or pass in a config array
+     * If supplying an over-wridden tempDir ensure it's the full system
+     * path the the directory and that the _www or apache user/group has
+     * read/write permission to it.
+     * 
+     * @var Array config array. See config.php for information on available options
      */
-    public function __construct() {
-        // Default print mode is save to file.
-        // Switch to 'I' for http response
-        $this->printMode = 'F';
-        $this->printDirName = 'printed_invoices';
-        $this->setOutputDir(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $this->printDirName);
-        $config = ['mode' => 'utf-8', 'format' => 'A4-L', 'orientation' => 'L', 'tempDir' => $this->getOutputDir()];
+    public function __construct($config = []) {
+                
+        // Any config passed in must be an associative array
+        if (!is_array($config)) {
+            throw new InvalidArgumentException('$config must be an array with construct variables that can be found https://mpdf.github.io/reference/mpdf-functions/construct.html');
+        }
+
+        // If the config array has no values, use the config file.
+        if (sizeof($config === 0)) {
+            $config = include('config.php');
+        }
+
+        // If the config array doesn't have an overwridden printDir, use the default.
+        if (!array_key_exists('tempDir', $config)) {
+            $this->printDir = 'printed_invoices';
+            $this->setPrintDir(sys_get_temp_dir() . $this->printDir);
+            $config['tempDir'] = $this->getPrintDir();
+        } else {
+            $this->setPrintDir($config['tempDir']);
+        }
+
+        // instantiate the mpdf instance
         $this->mpdf = new \Mpdf\Mpdf($config);
     }
 
@@ -40,42 +81,88 @@ class makepdf
     /**
      * Set the output Directory
      */
-    private function setOutputDir($outputDir) {
-        $this->outputDir = $outputDir;
+    private function setPrintDir($printDir) {
+        $this->printDir = $printDir;
     }
 
 
     /**
      * Get the output Directory that was set in consrtuction
      */
-    public function getOutputDir() {
-        return $this->outputDir;
+    public function getPrintDir() {
+        return $this->printDir;
     }
 
 
     /**
+     * Set the singular invoice values
      * 
+     * Pass in an associative array of string values for the primative types in the invoice
+     *   
+     * @var Array workCompany|workCompanyAddress|vatNumber|invoiceNumber|invoiceDate|clientCompany|sortCode|accountNumber|subTotal|vat|totalDue
      */
-    public function setHTML() {
-        $this->invoiceHTML = 'test';
+    public function setInvoiceValues($invoiceValues) {
+        foreach($invoiceValues as $key => $value){
+            try {
+                $this->{$key} = $value;
+            
+            } catch (Exception $e) {
+                throw new Exception ($e->getMessage() . ' Allowable array keys are: workCompany, workCompanyAddress, vatNumber, invoiceNumber, invoiceDate, clientCompany, sortCode, accountNumber, subTotal, vat, totalDue');
+            }
+        }
+    }
+
+    /**
+     * Set the invoice records shown in the table in the middle of the invoice
+     * 
+     * Structure:
+     *  records [
+     *      {
+     *          "description": "",
+     *          "rate": "",
+     *          "rateType": "",
+     *          "units": "",
+     *          "sum": ""             
+     *      }, ...
+     *  ]
+     * 
+     *  @var \ArrayObject 
+     */
+    public function setInvoiceRecords($invoiceRecords) {
+        $this->invoiceRecords = $invoiceRecords;
     }
 
 
     /**
-     * 
+     * Build invoice HTML in $this->invoiceHTML
      */
-    public function createPDF($filename) {
+    public function buildInvoice() {
+        // Build invoice html
+        $this->invoiceHTML = '';
+
         $this->mpdf->writeHTML($this->invoiceHTML);
-        
+    }
+
+
+    /**
+     * 
+     */
+    public function printInvoice($filename) {
+
         if (!isset($filename) || trim($filename) === '') {
             throw new LengthException('Argument $filname must have a length.');        
-        } elseif (file_exists($this->getOutputDir() . DIRECTORY_SEPARATOR . $filename . 'pdf')) {
-            throw new OutOfBoundsException('File ' . $this->getOutputDir() . DIRECTORY_SEPARATOR . $filename . 'pdf already exists.');
+        }
+        
+        $filename .= '_' . date($this->dateFormatMask);
+
+        if (file_exists($this->getPrintDir() . DIRECTORY_SEPARATOR . $filename . '.pdf')) {
+            throw new OutOfBoundsException('File ' . $this->getPrintDir() . DIRECTORY_SEPARATOR . $filename . '.pdf already exists.');
         } else {
-            $this->mpdf->Output($this->getOutputDir() . DIRECTORY_SEPARATOR . $filename . 'pdf', 'F');
+            echo $filename;
+            $this->mpdf->Output($this->getPrintDir() . DIRECTORY_SEPARATOR . $filename . '.pdf', 'F');
         }
 
-        return $this->getOutputDir();
+        return $this->getPrintDir();
     }
     
 }

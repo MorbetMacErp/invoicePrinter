@@ -7,13 +7,13 @@
  *      configuration setting that you would like to overwrite
  *      to the class constructor.
  * 
- * To check out .....
- * See https://mpdf.github.io/configuration/configuration-v7-x.html
+ * To see a full list of config options check out ...
+ * See https://mpdf.github.io/reference/mpdf-functions/construct.html
  */
 return array(
     'mode' => 'utf-8',
-    'format' => 'A4-L',
-    'orientation' => 'L',
+    'format' => 'A4',
+    'orientation' => 'P',
 );
 
 ?>
