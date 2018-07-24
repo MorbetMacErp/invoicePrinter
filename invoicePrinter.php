@@ -9,7 +9,7 @@
  */
 require_once __DIR__ . '/vendor/autoload.php';
 
-class makepdf
+class invoicePrinter
 {
     // Operational variables 
     private $mpdf;
@@ -53,7 +53,10 @@ class makepdf
      * @var Array config array. See config.php for information on available options
      */
     public function __construct($config = []) {
-                
+        
+        // Set the default timezone so iso 8601 appendices to filenames are BST complient
+        date_default_timezone_set('Europe/London');
+
         // Any config passed in must be an associative array
         if (!is_array($config)) {
             throw new InvalidArgumentException('$config must be an array with construct variables that can be found https://mpdf.github.io/reference/mpdf-functions/construct.html');
@@ -136,9 +139,49 @@ class makepdf
     /**
      * Build invoice HTML in $this->invoiceHTML
      */
-    public function buildInvoice() {
+    private function buildInvoice() {
         // Build invoice html
-        $this->invoiceHTML = '';
+        $this->invoiceHTML = "
+            <header>
+                <h2 style='display: inline;'>{$this->workCompany}</h2>
+                <h3 style='display: inline;'>{$this->invoiceDate}</h3>
+            </header>
+            <section>
+                <address>{$this->workCompanyAddress}</address>
+                <h4>{$this->vatNumber}</h4>
+                <span>Invoice:&nbsp;{$this->invoiceNumber}</span>
+            </section>
+            <section>
+                <p>To&nbsp;{$this->clientCompany}</p>
+            </section>
+            <table>
+                <thead>
+                    <th>Description</th>
+                    <th>Rate</th>
+                    <th>Rate Type</th>
+                    <th>Units</th>
+                    <th>Sum</th>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <hr />
+            <section>
+                <div align='right'>Sub Total £{$this->subTotal}</div>
+                <div>
+                    <p style='inline;'>{$this->sortCode}</p>
+                    <p align='right;' style='inline;'>{$this->vat}</p>
+                </div>
+                <div>
+                    <p style='inline;'>{$this->accountNumber}</p>
+                    <p align='right;' style='inline;'>{$this->totalDue}</p>
+                </div>
+            </section>
+            <section>
+                <!--  Guessing this will need changed -->
+                <p>Terms 14 days net<p>
+            </section>
+        ";
 
         $this->mpdf->writeHTML($this->invoiceHTML);
     }
@@ -158,7 +201,7 @@ class makepdf
         if (file_exists($this->getPrintDir() . DIRECTORY_SEPARATOR . $filename . '.pdf')) {
             throw new OutOfBoundsException('File ' . $this->getPrintDir() . DIRECTORY_SEPARATOR . $filename . '.pdf already exists.');
         } else {
-            echo $filename;
+            $this->buildInvoice();
             $this->mpdf->Output($this->getPrintDir() . DIRECTORY_SEPARATOR . $filename . '.pdf', 'F');
         }
 
