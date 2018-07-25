@@ -1,6 +1,15 @@
 # Invoice Printer
 
-Wrapper for mpdf 
+## Wrapper for mpdf.
+Invoice printer for mPdf uses composer dependency manager for PHP by necesity, as mpdf only supports install via composer. 
+
+Once you've cloned the Git Repo, use CLI in the invoicePrinter root folder and follow the instructions to install composer here: https://getcomposer.org/download/
+
+Then run the following command in the invoicePrinter root folder.
+```cli
+php composer.phar install
+```
+To now make use of invoicePrinter see the following example usage and/or the ./Docs/api/index.html
 
 ## Example usage
 ```php
