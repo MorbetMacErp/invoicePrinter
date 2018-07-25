@@ -1,13 +1,10 @@
 <?php
 /**
- * toPdf class for outputing a pdf to file
+ * invoicePrinter class for outputing a pdf
  * 
- * Uses mpdf library to output a pdf invoice to file
- * 
- * Example usage 
- * 
+ * Uses mpdf library to output a pdf invoice 
  */
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 class invoicePrinter
 {
@@ -64,7 +61,7 @@ class invoicePrinter
 
         // If the config array has no values, use the config file.
         if (sizeof($config === 0)) {
-            $config = include('config.php');
+            $config = include(dirname(__DIR__)  . '/config.php');
         }
 
         // If the config array doesn't have an overwridden printDir, use the default.
@@ -145,17 +142,11 @@ class invoicePrinter
 
         // Build the table of invoice records
         foreach ($this->invoiceRecords as $row) {
+            $tbody .= '<tr>';
             foreach ($row as $value) {
-                $tbody .= "
-                    <tr>
-                        <td>{$value->description}</td>
-                        <td>{$value->rate}</td>
-                        <td>{$value->rateType}</td>
-                        <td>{$value->units}</td>
-                        <td>{$value->sum}</td>
-                    </tr>
-                ";
+                $tbody .= "<td>{$value}</td>";
             }
+            $tbody .= '</tr>';
         }
 
         // Build invoice html 
@@ -172,31 +163,38 @@ class invoicePrinter
             <section>
                 <p>To&nbsp;{$this->clientCompany}</p>
             </section>
-            <table>
+            <table width='100%'>
                 <thead>
-                    <th>Description</th>
-                    <th>Rate</th>
-                    <th>Rate Type</th>
-                    <th>Units</th>
-                    <th>Sum</th>
+                    <tr>
+                        <th align='left'>Description</th>
+                        <th align='left'>Rate</th>
+                        <th align='left'>Rate Type</th>
+                        <th align='left'>Units</th>
+                        <th align='left'>Sum</th>
+                    </tr>
                 </thead>
                 <tbody>
                     {$tbody}
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <th align='right' colspan='4'>SubTotal</th>
+                        <td>£{$this->subTotal}</td>
+                    </tr>
+                </tfoot>
             </table>
             <hr />
             <section>
-                <div align='right'>Sub Total £{$this->subTotal}</div>
-                <div>
-                    <p style='inline;'>{$this->sortCode}</p>
-                    <p align='right;' style='inline;'>{$this->vat}</p>
+                <div style='width: 100%;'>
+                    <span style='width: 50%; padding-left: 10%;'>Sort Code: {$this->sortCode}</span>
+                    <span style='width: 50%; float: right; padding-right: 20%; text-align: right;'>VAT: {$this->vat}</span>
                 </div>
-                <div>
-                    <p style='inline;'>{$this->accountNumber}</p>
-                    <p align='right;' style='inline;'>{$this->totalDue}</p>
+                <div style='width: 100%;'>
+                    <span style='width: 50%; padding-left: 10%;'>Account Number: {$this->accountNumber}</span>
+                    <span style='width: 50%; float: right; padding-right: 20%; text-align: right;'>Total Due: {$this->totalDue}</span>
                 </div>
             </section>
-            <section>
+            <section style='text-align: center; padding-top: 5%;'>
                 <!--  Guessing this will need changed -->
                 <p>Terms 14 days net<p>
             </section>

@@ -1,3 +1,8 @@
+# Invoice Printer
+
+Wrapper for mpdf 
+
+## Example usage
 ```php
 <?php
     /**
@@ -5,7 +10,7 @@
      * 
      * include the invoice printer for use.
      */
-    include_once __DIR__ . DIRECTORY_SEPARATOR . 'pdfGeneration/invoicePrinter.php';
+    include_once __DIR__ . DIRECTORY_SEPARATOR . 'invoicePrinter/src/invoicePrinter.php';
 
     // Create a new instance of the invoicePrinter class
     $mpdf = new invoicePrinter();
@@ -34,14 +39,14 @@
     $mpdf->setInvoiceRecords($invoiceRecords);
     $mpdf->printInvoice('russell_lavens_invoice');
 
+    // Same as before, but send 'I' and you'll get the 
+    //$mpdf->setInvoiceValues(['workCompany' => 'A Random Company Name', 'sortCode' => '12-34-56']);
+    //$mpdf->printInvoice('russell_lavens_invoice', 'I');
+
     // Same as before, but send 'D' as the second parameter to printInvoice and the document
     // will be downloaded 
     $mpdf->setInvoiceValues(['workCompany' => 'A Random Company Name', 'vatNumber' => '0123456789']);
     $mpdf->printInvoice('russell_lavens_invoice', 'D');
-
-    // Same as before, but send 'I' and you'll get the 
-    $mpdf->setInvoiceValues(['workCompany' => 'A Random Company Name', 'sortCode' => '12-34-56']);
-    $mpdf->printInvoice('russell_lavens_invoice', 'I');
 
 ?>  
 ```
