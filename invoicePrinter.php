@@ -43,7 +43,7 @@ class invoicePrinter
 
 
     /**
-     * makekPDF constructor
+     * invoicePrinter constructor
      * 
      * Call with no arguments for defaults, or pass in a config array
      * If supplying an over-wridden tempDir ensure it's the full system
@@ -140,7 +140,25 @@ class invoicePrinter
      * Build invoice HTML in $this->invoiceHTML
      */
     private function buildInvoice() {
-        // Build invoice html
+        
+        $tbody = '';
+
+        // Build the table of invoice records
+        foreach ($this->invoiceRecords as $row) {
+            foreach ($row as $value) {
+                $tbody .= "
+                    <tr>
+                        <td>{$value->description}</td>
+                        <td>{$value->rate}</td>
+                        <td>{$value->rateType}</td>
+                        <td>{$value->units}</td>
+                        <td>{$value->sum}</td>
+                    </tr>
+                ";
+            }
+        }
+
+        // Build invoice html 
         $this->invoiceHTML = "
             <header>
                 <h2 style='display: inline;'>{$this->workCompany}</h2>
@@ -163,6 +181,7 @@ class invoicePrinter
                     <th>Sum</th>
                 </thead>
                 <tbody>
+                    {$tbody}
                 </tbody>
             </table>
             <hr />
@@ -188,24 +207,36 @@ class invoicePrinter
 
 
     /**
+     * Print the Invoice
      * 
+     * Can be printed to file, browser inline or download.
+     * 
+     * @var String name of the file
+     * @var String optional output mode, defaults to File 'I'|'D' for inline or download
      */
-    public function printInvoice($filename) {
+    public function printInvoice($filename, $outputMode = '') {
 
-        if (!isset($filename) || trim($filename) === '') {
-            throw new LengthException('Argument $filname must have a length.');        
-        }
-        
+        $this->buildInvoice();
         $filename .= '_' . date($this->dateFormatMask);
 
-        if (file_exists($this->getPrintDir() . DIRECTORY_SEPARATOR . $filename . '.pdf')) {
-            throw new OutOfBoundsException('File ' . $this->getPrintDir() . DIRECTORY_SEPARATOR . $filename . '.pdf already exists.');
-        } else {
-            $this->buildInvoice();
-            $this->mpdf->Output($this->getPrintDir() . DIRECTORY_SEPARATOR . $filename . '.pdf', 'F');
-        }
+        if ($outputMode === 'I') {
+            $this->mpdf->Output($filename . '.pdf', \Mpdf\Output\Destination::INLINE);
+            return $filename . '.pdf';
 
-        return $this->getPrintDir();
+        } elseif ($outputMode === 'D') {
+            $this->mpdf->Output($filename . '.pdf', \Mpdf\Output\Destination::DOWNLOAD);
+            return $filename . '.pdf';
+
+        } else {
+
+            if (file_exists($this->getPrintDir() . DIRECTORY_SEPARATOR . $filename . '.pdf')) {
+                throw new OutOfBoundsException('File ' . $this->getPrintDir() . DIRECTORY_SEPARATOR . $filename . '.pdf already exists.');
+            } else {
+                $this->mpdf->Output($this->getPrintDir() . DIRECTORY_SEPARATOR . $filename . '.pdf', \Mpdf\Output\Destination::FILE);
+            }
+
+            return $this->getPrintDir() . DIRECTORY_SEPARATOR . $filename . '.pdf';
+        }
     }
     
 }
