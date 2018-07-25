@@ -11,6 +11,8 @@ php composer.phar install
 ```
 To now make use of invoicePrinter see the following example usage and/or the ./Docs/api/index.html
 
+Just using this little change to test the gpg key and automatic signing.
+
 ## Example usage
 ```php
 <?php
