@@ -1,8 +1,8 @@
 {
     "require-dev": {
+        "phpdocumentor/phpdocumentor": "2.*"
     },
     "require": {
-        "mpdf/mpdf": "^7.1",
-        "phpdocumentor/phpdocumentor": "2.*"
+        "mpdf/mpdf": "^7.1"
     }
 }
