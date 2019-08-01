@@ -1,17 +1,21 @@
 # Invoice Printer
 
-## Wrapper for mpdf.
-Invoice printer for mPdf uses composer dependency manager for PHP by necesity, as mpdf only supports install via composer. 
+## Wrapper for mpdf
+
+Invoice printer for mPdf uses composer dependency manager for PHP by necesity, as mpdf only supports install via composer.
 
 Once you've cloned the Git Repo, use CLI in the invoicePrinter root folder and follow the instructions to install composer here: https://getcomposer.org/download/
 
 Then run the following command in the invoicePrinter root folder.
+
 ```cli
 php composer.phar install
 ```
+
 To now make use of invoicePrinter see the following example usage and/or the ./Docs/api/index.html
 
 ## Example usage
+
 ```php
 <?php
     /**
@@ -23,12 +27,12 @@ To now make use of invoicePrinter see the following example usage and/or the ./D
 
     // Create a new instance of the invoicePrinter class
     $mpdf = new invoicePrinter();
-    
+
     // Leave out the second parameter to printInvoice to it's default and the file will
     // be saved to sys_get_temp_dir() . '/printed_invoices' or whatever tempDir you've
     // overritten in the config.
     $mpdf->setInvoiceValues(['workCompany' => 'A Random Company Name', 'workComcanyAddress' => '10 main street <br >Main Town<br >']);
-    
+
     $invoiceRecords = [
         [
             "description" => "blah", 
