@@ -3,6 +3,6 @@
         "phpdocumentor/phpdocumentor": "2.*"
     },
     "require": {
-        "mpdf/mpdf": "^7.1"
+        "mpdf/mpdf": "^8.1"
     }
 }
